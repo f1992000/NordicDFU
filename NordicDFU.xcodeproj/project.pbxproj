@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -48,7 +48,6 @@
 				115D5CEEEDB8BBC40B6C740A /* Pods-NordicDFU.debug.xcconfig */,
 				6C3F2200899C74670D147F81 /* Pods-NordicDFU.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};

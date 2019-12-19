@@ -12,12 +12,10 @@ import iOSDFULibrary
 
 var MacCentralManager: CBCentralManager!
 var TargetPeripheral: CBPeripheral!
-var TargetCharacteristic: CBCharacteristic!
-var TxCharacteristic: CBCharacteristic?
-var TargetService: CBService!
 var connectDeviceName = "DfuTarg"
+var DFUFileName = "DFU.zip"
 
-class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDelegate {
+class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDelegate, DFUServiceDelegate, DFUProgressDelegate, LoggerDelegate {
 
    override func viewDidLoad() {
         super.viewDidLoad()
@@ -66,9 +64,50 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
 
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         print("Connection Confirmed!")
+        startDFU()
     }
 
+    func startDFU(){
+ 
+        let filePath = NSHomeDirectory()+"/Documents/"+DFUFileName
+        do{
+          let fileList = try FileManager.default.contentsOfDirectory(atPath: filePath)
+          for file in fileList{
+            print(file)
+          }
+        }
+        catch{
+            print("Cannot list directory")
+        }
+        
+        let selectedFirmware = DFUFirmware(urlToZipFile:URL(fileURLWithPath: filePath))
 
+        let initiator = DFUServiceInitiator().with(firmware: selectedFirmware!)
+        // Optional:
+        // initiator.forceDfu = true/false // default false
+        // initiator.packetReceiptNotificationParameter = N // default is 12
+        initiator.logger = self // - to get log info
+        initiator.delegate = self // - to be informed about current state and errors
+        initiator.progressDelegate = self // - to show progress bar
+        // initiator.peripheralSelector = ... // the default selector is used
+        let controller = initiator.start(target: TargetPeripheral)
+    }
+        
+        func dfuStateDidChange(to state: DFUState) {
+            print("state: \(state.description())")
+        }
+        
+        func dfuError(_ error: DFUError, didOccurWithMessage message: String) {
+            print("dfu error : \(message)")
+        }
+        
+        func dfuProgressDidChange(for part: Int, outOf totalParts: Int, to progress: Int, currentSpeedBytesPerSecond: Double, avgSpeedBytesPerSecond: Double) {
+            print("progress: \(progress)")
+        }
+        
+        func logWith(_ level: LogLevel, message: String) {
+            print("logWith (\(level.name())) : \(message)")
+        }
 
 }
 
